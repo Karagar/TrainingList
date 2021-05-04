@@ -35,6 +35,7 @@ BEGIN_MESSAGE_MAP(TrainingListCourses, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON1, &TrainingListCourses::OnBnClickedButton1)
 	ON_BN_CLICKED(IDC_BUTTON2, &TrainingListCourses::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_BUTTON3, &TrainingListCourses::OnBnClickedButton3)
+	ON_LBN_SELCHANGE(IDC_LIST1, &TrainingListCourses::OnLbnSelchangeList1)
 END_MESSAGE_MAP()
 
 
@@ -64,7 +65,7 @@ void TrainingListCourses::SetDB(CDatabase* database) {
 	this->database = database;
 }
 
-// Заполнение списка подразделений
+// Заполнение списка курсов
 void TrainingListCourses::FillCourses() {
 	CRecordset cr(database);
 	CString varValue;
@@ -93,6 +94,65 @@ void TrainingListCourses::FillCourses() {
 	ResetControls(L"course");
 }
 
+// Заполнение списка скилов
+void TrainingListCourses::FillSkills(CString course_id) {
+	CRecordset cr(database);
+	CString varValue;
+	CString firstQueryString = L"Select s.skill_id, s.name from ";
+	CString secondQueryString = L" rs \
+		left join skill s on rs.skill_id = s.skill_id \
+		where rs.course_id = " + course_id + " \
+		order by 1 desc";
+
+	cr.Open(CRecordset::forwardOnly, L"Select count(*) cnt from requirement_skill where course_id = " + course_id);
+	cr.GetFieldValue(L"cnt", varValue);
+	int rowCount = _ttoi(varValue);
+	cr.Close();
+
+	requirement_skill.ResetContent();
+	if (rowCount > 0) {
+		cr.Open(CRecordset::forwardOnly, firstQueryString + L"requirement_skill" + secondQueryString);
+		requirement_skills = new Skill[rowCount];
+		int i = 0;
+
+		while (!cr.IsEOF())
+		{
+			Skill tmp{};
+			cr.GetFieldValue(L"skill_id", tmp.skill_id);
+			cr.GetFieldValue(L"name", tmp.skill);
+			cr.MoveNext();
+			requirement_skill.AddString(tmp.skill);
+			requirement_skills[i] = tmp;
+			i++;
+		}
+		cr.Close();
+	}
+	
+	cr.Open(CRecordset::forwardOnly, L"Select count(*) cnt from received_skill where course_id = " + course_id);
+	cr.GetFieldValue(L"cnt", varValue);
+	rowCount = _ttoi(varValue);
+	cr.Close();
+
+	received_skill.ResetContent();
+	if (rowCount > 0) {
+		cr.Open(CRecordset::forwardOnly, firstQueryString + L"received_skill" + secondQueryString);
+		received_skills = new Skill[rowCount];
+		int i = 0;
+
+		while (!cr.IsEOF())
+		{
+			Skill tmp{};
+			cr.GetFieldValue(L"skill_id", tmp.skill_id);
+			cr.GetFieldValue(L"name", tmp.skill);
+			cr.MoveNext();
+			received_skill.AddString(tmp.skill);
+			received_skills[i] = tmp;
+			i++;
+		}
+		cr.Close();
+	}
+}
+
 // Сброс контроллов
 void TrainingListCourses::ResetControls(CString control_type) {
 	if (control_type == L"course")
@@ -118,4 +178,28 @@ void TrainingListCourses::OnBnClickedButton2()
 void TrainingListCourses::OnBnClickedButton3()
 {
 	// TODO: добавьте свой код обработчика уведомлений
+}
+
+
+void TrainingListCourses::OnLbnSelchangeList1()
+{
+	if (course.GetCurSel() >= 0) {
+		TRY{
+			FillSkills(courses[course.GetCurSel()].course_id);
+		} CATCH(CDBException, e) {
+			CTrainingListDlg mainDlg;
+			mainDlg.ReconnectDB();
+			TRY{
+				FillSkills(courses[course.GetCurSel()].course_id);
+			} CATCH(CDBException, e) {
+				AfxMessageBox(L"Database error: " + e->m_strError);
+			}
+			END_CATCH;
+		}
+		END_CATCH;
+		UpdateData(false);
+
+		GetDlgItem(IDC_BUTTON2)->EnableWindow(true);
+		GetDlgItem(IDC_BUTTON3)->EnableWindow(true);
+	}
 }

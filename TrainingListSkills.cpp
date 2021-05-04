@@ -72,7 +72,7 @@ void TrainingListSkills::SetDB(CDatabase* database) {
 	this->database = database;
 }
 
-// Заполнение списка подразделений
+// Заполнение списка групп скилов
 void TrainingListSkills::FillSkillGroups() {
 	CRecordset cr(database);
 	CString varValue;
@@ -101,7 +101,7 @@ void TrainingListSkills::FillSkillGroups() {
 	ResetControls(L"skill_group");
 }
 
-// Заполнение списка должностей
+// Заполнение списка скилов
 void TrainingListSkills::FillSkills(CString skill_group_id) {
 	CRecordset cr(database);
 	CString varValue;
@@ -130,7 +130,7 @@ void TrainingListSkills::FillSkills(CString skill_group_id) {
 	ResetControls(L"skill");
 }
 
-// Обновление подразделения
+// Обновление группы скилов
 CString TrainingListSkills::UpdateSkillGroup(CString skill_group_id, CString to) {
 	CString SqlString, err = L"";
 	to.Replace(L"\\", L"\\\\");
@@ -155,7 +155,7 @@ CString TrainingListSkills::UpdateSkillGroup(CString skill_group_id, CString to)
 	return err;
 }
 
-// Удаление подразделения
+// Удаление группы скилов
 CString TrainingListSkills::DeleteSkillGroup(CString skill_group_id) {
 	CString firstSqlString, secondSqlString, err = L"";
 	firstSqlString = L"DELETE FROM skill_group where skill_group_id = " + skill_group_id;
@@ -179,7 +179,7 @@ CString TrainingListSkills::DeleteSkillGroup(CString skill_group_id) {
 	return err;
 }
 
-// Обновление должности
+// Обновление скила
 CString TrainingListSkills::UpdateSkill(CString skill_id, CString to) {
 	CString SqlString, err = L"";
 	CString skill_group_id = skill_groups[skill_group.GetCurSel()].skill_group_id;
@@ -205,7 +205,7 @@ CString TrainingListSkills::UpdateSkill(CString skill_id, CString to) {
 	return err;
 }
 
-// Удаление подразделения
+// Удаление скила
 CString TrainingListSkills::DeleteSkill(CString skill_id) {
 	CString SqlString, err = L"";
 	SqlString = L"DELETE FROM skill where skill_id = " + skill_id;

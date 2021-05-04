@@ -13,7 +13,7 @@ public:
 	TrainingListCourses(CWnd* pParent = nullptr);   // стандартный конструктор
 	CDatabase* database;
 	Course* courses;
-	Skill* skills;
+	Skill *requirement_skills, *received_skills;
 	virtual ~TrainingListCourses();
 
 // Данные диалогового окна
@@ -29,6 +29,7 @@ protected:
 public:
 	void SetDB(CDatabase* database);
 	void FillCourses();
+	void FillSkills(CString course_id);
 	void ResetControls(CString control_type);
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedButton2();
@@ -36,4 +37,5 @@ public:
 	CListBox course;
 	CListBox requirement_skill;
 	CListBox received_skill;
+	afx_msg void OnLbnSelchangeList1();
 };

@@ -98,3 +98,4 @@ create table received_skill (
 INSERT INTO received_skill (course_id, skill_id) VALUES (1, 1);
 INSERT INTO received_skill (course_id, skill_id) VALUES (2, 2);
 INSERT INTO received_skill (course_id, skill_id) VALUES (3, 6);
+INSERT INTO received_skill (course_id, skill_id) VALUES (4, 3);
