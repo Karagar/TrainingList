@@ -99,3 +99,34 @@ INSERT INTO received_skill (course_id, skill_id) VALUES (1, 1);
 INSERT INTO received_skill (course_id, skill_id) VALUES (2, 2);
 INSERT INTO received_skill (course_id, skill_id) VALUES (3, 6);
 INSERT INTO received_skill (course_id, skill_id) VALUES (4, 3);
+
+create table employee_skill (
+    employee_skill_id int NOT NULL AUTO_INCREMENT,
+    employee_id int NOT NULL,
+    skill_id int NOT NULL,
+    PRIMARY KEY (employee_skill_id),
+    UNIQUE(employee_id, skill_id)
+);
+
+INSERT INTO employee_skill (employee_id, skill_id) VALUES (1, 1);
+INSERT INTO employee_skill (employee_id, skill_id) VALUES (1, 2);
+INSERT INTO employee_skill (employee_id, skill_id) VALUES (1, 3);
+INSERT INTO employee_skill (employee_id, skill_id) VALUES (1, 4);
+INSERT INTO employee_skill (employee_id, skill_id) VALUES (1, 5);
+INSERT INTO employee_skill (employee_id, skill_id) VALUES (2, 3);
+INSERT INTO employee_skill (employee_id, skill_id) VALUES (3, 3);
+INSERT INTO employee_skill (employee_id, skill_id) VALUES (4, 3);
+
+create table position_skill (
+    position_skill_id int NOT NULL AUTO_INCREMENT,
+    position_id int NOT NULL,
+    skill_id int NOT NULL,
+    PRIMARY KEY (position_skill_id),
+    UNIQUE(position_id, skill_id)
+);
+
+INSERT INTO position_skill (position_id, skill_id) VALUES (1, 3);
+INSERT INTO position_skill (position_id, skill_id) VALUES (2, 3);
+INSERT INTO position_skill (position_id, skill_id) VALUES (3, 3);
+INSERT INTO position_skill (position_id, skill_id) VALUES (4, 1);
+INSERT INTO position_skill (position_id, skill_id) VALUES (4, 3);

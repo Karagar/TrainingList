@@ -8,6 +8,7 @@
 #include "TrainingListDlg.h"
 #include "TrainingListEmployes.h"
 #include "TrainingListDepartmentsPositions.h"
+#include "TrainingListCreateCourse.h"
 #include "TrainingListSkills.h"
 #include "TrainingListCourses.h"
 #include "afxdialogex.h"

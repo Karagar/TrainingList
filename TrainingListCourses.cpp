@@ -5,10 +5,11 @@
 #include "TrainingList.h"
 #include "TrainingListDlg.h"
 #include "TrainingListCourses.h"
+#include "TrainingListCreateCourse.h"
 #include "afxdialogex.h"
 
 
-// Диалоговое окно TrainingListCourses
+TrainingListCreateCourse create_course_page;
 
 IMPLEMENT_DYNAMIC(TrainingListCourses, CDialogEx)
 
@@ -57,6 +58,7 @@ BOOL TrainingListCourses::OnInitDialog() {
 	}
 	END_CATCH;
 	UpdateData(false);
+	create_course_page.SetDB(database);
 	return TRUE;  // возврат значения TRUE, если фокус не передан элементу управления
 }
 
@@ -165,13 +167,22 @@ void TrainingListCourses::ResetControls(CString control_type) {
 
 void TrainingListCourses::OnBnClickedButton1()
 {
-	// TODO: добавьте свой код обработчика уведомлений
+	INT_PTR returnCode = -1;
+	create_course_page.course_id = "0";
+	returnCode = create_course_page.DoModal();
 }
 
 
 void TrainingListCourses::OnBnClickedButton2()
 {
-	// TODO: добавьте свой код обработчика уведомлений
+	if (course.GetCurSel() >= 0) {
+		INT_PTR returnCode = -1;
+		create_course_page.course_id = courses[course.GetCurSel()].course_id;
+		returnCode = create_course_page.DoModal();
+	}
+	else {
+		GetDlgItem(IDC_BUTTON2)->EnableWindow(false);
+	}
 }
 
 
