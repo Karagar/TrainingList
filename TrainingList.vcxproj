@@ -190,6 +190,8 @@
     <ClInclude Include="TrainingList.h" />
     <ClInclude Include="TrainingListCourses.h" />
     <ClInclude Include="TrainingListCreateCourse.h" />
+    <ClInclude Include="TrainingListCreateEmploye.h" />
+    <ClInclude Include="TrainingListCreateEmployee.h" />
     <ClInclude Include="TrainingListDepartmentsPositions.h" />
     <ClInclude Include="TrainingListDlg.h" />
     <ClInclude Include="TrainingListEmployes.h" />
@@ -205,6 +207,7 @@
     <ClCompile Include="TrainingList.cpp" />
     <ClCompile Include="TrainingListCourses.cpp" />
     <ClCompile Include="TrainingListCreateCourse.cpp" />
+    <ClCompile Include="TrainingListCreateEmployee.cpp" />
     <ClCompile Include="TrainingListDepartmentsPositions.cpp" />
     <ClCompile Include="TrainingListDlg.cpp" />
     <ClCompile Include="TrainingListEmployes.cpp" />

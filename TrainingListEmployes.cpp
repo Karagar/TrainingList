@@ -5,9 +5,13 @@
 #include "TrainingList.h"
 #include "TrainingListDlg.h"
 #include "TrainingListEmployes.h"
+#include "TrainingListCreateEmployee.h"
 #include "afxdialogex.h"
 
-// Диалоговое окно TrainingListEmployes
+
+
+TrainingListCreateEmployee create_employee_page;
+
 IMPLEMENT_DYNAMIC(TrainingListEmployes, CDialogEx)
 
 TrainingListEmployes::TrainingListEmployes(CWnd* pParent /*=nullptr*/)
@@ -176,17 +180,7 @@ void TrainingListEmployes::RedrawTab() {
 // Выбор конкретного работника
 void TrainingListEmployes::OnLvnItemchangedList4(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
-	UpdateData(FALSE);
-	NM_LISTVIEW* pNMListView = (NM_LISTVIEW*)pNMHDR;
-	switch (pNMListView->hdr.code)
-	{
-		case LVN_ITEMCHANGED:
-		{
-			AfxMessageBox(L"Раздел в разработке");
-		}
-		break;
-	}
-	UpdateData(TRUE);
-	*pResult = 0;
+	INT_PTR returnCode = -1;
+	create_employee_page.employe_id = "0";
+	returnCode = create_employee_page.DoModal();
 }

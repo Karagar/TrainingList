@@ -7,16 +7,20 @@
 #define IDS_ABOUTBOX                    101
 #define IDD_TRAININGLIST_DIALOG         102
 #define IDD_TRAININGLIST_EMPLOYES       103
+#define IDD_TRAININGLIST_EMPLOYEES      103
 #define IDR_MAINFRAME                   128
 #define IDD_TRAININGLIST_DEPARTMENTS_POSITIONS 132
 #define IDD_TRAININGLIST_SKILLS         133
 #define IDD_TRAININGLIST_COURSES        134
 #define IDD_TRAININGLIST_CREATE_COURSE  135
+#define IDD_TRAININGLIST_CREATE_EMPLOYE 136
+#define IDD_TRAININGLIST_CREATE_EMPLOYEE 136
 #define IDC_BUTTON1                     1000
 #define IDC_BUTTON2                     1001
 #define IDC_BUTTON3                     1002
 #define IDC_TAB1                        1002
 #define IDC_BUTTON4                     1003
+#define IDC_TAB2                        1003
 #define IDC_BUTTON5                     1004
 #define IDC_LIST4                       1005
 #define IDC_LIST1                       1006
@@ -26,8 +30,10 @@
 #define IDC_EDIT2                       1009
 #define IDC_BUTTON6                     1009
 #define IDC_EDIT3                       1010
-#define IDC_BUTTON7                     1011
+#define IDC_EDIT4                       1011
 #define IDC_LIST5                       1012
+#define IDC_EDIT5                       1013
+#define IDC_LIST6                       1014
 
 // Next default values for new objects
 // 

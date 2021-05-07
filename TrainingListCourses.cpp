@@ -170,6 +170,20 @@ void TrainingListCourses::OnBnClickedButton1()
 	INT_PTR returnCode = -1;
 	create_course_page.course_id = "0";
 	returnCode = create_course_page.DoModal();
+
+	TRY{
+		FillSkills(courses[course.GetCurSel()].course_id);
+	} CATCH(CDBException, e) {
+		CTrainingListDlg mainDlg;
+		mainDlg.ReconnectDB();
+		TRY{
+			FillSkills(courses[course.GetCurSel()].course_id);
+		} CATCH(CDBException, e) {
+			AfxMessageBox(L"Database error: " + e->m_strError);
+		}
+		END_CATCH;
+	}
+	END_CATCH;
 }
 
 
@@ -179,6 +193,20 @@ void TrainingListCourses::OnBnClickedButton2()
 		INT_PTR returnCode = -1;
 		create_course_page.course_id = courses[course.GetCurSel()].course_id;
 		returnCode = create_course_page.DoModal();
+
+		TRY{
+			FillSkills(courses[course.GetCurSel()].course_id);
+		} CATCH(CDBException, e) {
+			CTrainingListDlg mainDlg;
+			mainDlg.ReconnectDB();
+			TRY{
+				FillSkills(courses[course.GetCurSel()].course_id);
+			} CATCH(CDBException, e) {
+				AfxMessageBox(L"Database error: " + e->m_strError);
+			}
+			END_CATCH;
+		}
+		END_CATCH;
 	}
 	else {
 		GetDlgItem(IDC_BUTTON2)->EnableWindow(false);

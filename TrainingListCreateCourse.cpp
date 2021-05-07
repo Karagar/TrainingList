@@ -33,6 +33,11 @@ void TrainingListCreateCourse::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(TrainingListCreateCourse, CDialogEx)
+	ON_BN_CLICKED(IDC_BUTTON1, &TrainingListCreateCourse::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON5, &TrainingListCreateCourse::OnBnClickedButton5)
+	ON_NOTIFY(TCN_SELCHANGE, IDC_TAB1, &TrainingListCreateCourse::OnTcnSelchangeTab1)
+	ON_BN_CLICKED(IDC_BUTTON2, &TrainingListCreateCourse::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BUTTON6, &TrainingListCreateCourse::OnBnClickedButton6)
 END_MESSAGE_MAP()
 
 // Инициация диалога
@@ -40,13 +45,17 @@ BOOL TrainingListCreateCourse::OnInitDialog() {
 	CDialogEx::OnInitDialog();
 	CTrainingListDlg mainDlg;
 	TRY{
-		FillSkillGroups(database);
-		FillSkills(database);
+		FillSkillGroups(L"0");
+		FillAllSkills();
+		FillRequirementSkills();
+		FillReceivedSkills();
 	} CATCH(CDBException, e) {
 		mainDlg.ReconnectDB();
 		TRY{
-			FillSkillGroups(database);
-			FillSkills(database);
+			FillSkillGroups(L"0");
+			FillAllSkills();
+			FillRequirementSkills();
+			FillReceivedSkills();
 		} CATCH(CDBException, e) {
 			AfxMessageBox(L"Database error: " + e->m_strError);
 		}
@@ -73,7 +82,7 @@ void TrainingListCreateCourse::RedrawTab() {
 }
 
 // Стилизация окна списка работников
-void TrainingListCreateCourse::FillSkillGroups(CDatabase* database) {
+void TrainingListCreateCourse::FillSkillGroups(CString skill_group_id) {
 	CRecordset cr(database);
 	CString varVal, qStr;
 	int rowCount;
@@ -97,6 +106,7 @@ void TrainingListCreateCourse::FillSkillGroups(CDatabase* database) {
 	skill_groups = new SkillGroup[rowCount];
 	int i = 0;
 
+	skill_group.DeleteAllItems();
 	while (!cr.IsEOF())
 	{
 		SkillGroup tmp{};
@@ -105,15 +115,17 @@ void TrainingListCreateCourse::FillSkillGroups(CDatabase* database) {
 		cr.MoveNext();
 		skill_group.InsertItem(i, tmp.skill_group);
 		skill_groups[i] = tmp;
+		if (tmp.skill_group_id == skill_group_id) {
+			skill_group.SetCurSel(i);
+		}
 		i++;
 	}
 	cr.Close();
-	skill_group.SetCurSel(0);
 	UpdateData(false);
 }
 
-// Стилизация окна списка работников
-void TrainingListCreateCourse::FillSkills(CDatabase* database) {
+// Заполнение окна умений
+void TrainingListCreateCourse::FillAllSkills() {
 	CRecordset cr(database);
 	CString varValue, qStr, firstQueryString, secondQueryString;
 	qStr = L"from skill where skill_group_id \
@@ -151,59 +163,213 @@ void TrainingListCreateCourse::FillSkills(CDatabase* database) {
 			i++;
 		}
 		cr.Close();
+	}
+}
 
+// Заполнение окна умений
+void TrainingListCreateCourse::FillRequirementSkills() {
+	CRecordset cr(database);
+	CString varValue, firstQueryString, secondQueryString;
+	firstQueryString = L"Select s.skill_id, s.name from ";
+	secondQueryString = L" rs \
+			left join skill s on rs.skill_id = s.skill_id \
+			where rs.course_id = " + course_id + L" \
+			order by 1 desc";
 
-		cr.Open(CRecordset::forwardOnly, L"Select count(*) cnt from requirement_skill where course_id = " + course_id);
-		cr.GetFieldValue(L"cnt", varValue);
-		int rowCount = _ttoi(varValue);
-		cr.Close();
+	cr.Open(CRecordset::forwardOnly, L"Select count(*) cnt from requirement_skill where course_id = " + course_id);
+	cr.GetFieldValue(L"cnt", varValue);
+	int rowCount = _ttoi(varValue);
+	cr.Close();
 
-		requirement_skill_selected.ResetContent();
-		if (rowCount > 0) {
-			cr.Open(CRecordset::forwardOnly, firstQueryString + L"requirement_skill" + secondQueryString);
-			requirement_skills_selected = new Skill[rowCount];
-			int i = 0;
+	requirement_skill_selected.ResetContent();
+	if (rowCount > 0) {
+		cr.Open(CRecordset::forwardOnly, firstQueryString + L"requirement_skill" + secondQueryString);
+		requirement_skills_selected = new Skill[rowCount];
+		int i = 0;
 
-			while (!cr.IsEOF())
-			{
-				Skill tmp{};
-				cr.GetFieldValue(L"skill_id", tmp.skill_id);
-				cr.GetFieldValue(L"name", tmp.skill);
-				cr.MoveNext();
-				requirement_skill_selected.AddString(tmp.skill);
-				requirement_skills_selected[i] = tmp;
-				i++;
-			}
-			cr.Close();
+		while (!cr.IsEOF())
+		{
+			Skill tmp{};
+			cr.GetFieldValue(L"skill_id", tmp.skill_id);
+			cr.GetFieldValue(L"name", tmp.skill);
+			cr.MoveNext();
+			requirement_skill_selected.AddString(tmp.skill);
+			requirement_skills_selected[i] = tmp;
+			i++;
 		}
-
-		cr.Open(CRecordset::forwardOnly, L"Select count(*) cnt from received_skill where course_id = " + course_id);
-		cr.GetFieldValue(L"cnt", varValue);
-		rowCount = _ttoi(varValue);
 		cr.Close();
+	}
+}
 
-		received_skill_selected.ResetContent();
-		if (rowCount > 0) {
-			cr.Open(CRecordset::forwardOnly, firstQueryString + L"received_skill" + secondQueryString);
-			received_skills_selected = new Skill[rowCount];
-			int i = 0;
 
-			while (!cr.IsEOF())
-			{
-				Skill tmp{};
-				cr.GetFieldValue(L"skill_id", tmp.skill_id);
-				cr.GetFieldValue(L"name", tmp.skill);
-				cr.MoveNext();
-				received_skill_selected.AddString(tmp.skill);
-				received_skills_selected[i] = tmp;
-				i++;
-			}
-			cr.Close();
+// Заполнение окна умений
+void TrainingListCreateCourse::FillReceivedSkills() {
+	CRecordset cr(database);
+	CString varValue, firstQueryString, secondQueryString;
+	firstQueryString = L"Select s.skill_id, s.name from ";
+	secondQueryString = L" rs \
+			left join skill s on rs.skill_id = s.skill_id \
+			where rs.course_id = " + course_id + L" \
+			order by 1 desc";
+
+	cr.Open(CRecordset::forwardOnly, L"Select count(*) cnt from received_skill where course_id = " + course_id);
+	cr.GetFieldValue(L"cnt", varValue);
+	int rowCount = _ttoi(varValue);
+	cr.Close();
+
+	received_skill_selected.ResetContent();
+	if (rowCount > 0) {
+		cr.Open(CRecordset::forwardOnly, firstQueryString + L"received_skill" + secondQueryString);
+		received_skills_selected = new Skill[rowCount];
+		int i = 0;
+
+		while (!cr.IsEOF())
+		{
+			Skill tmp{};
+			cr.GetFieldValue(L"skill_id", tmp.skill_id);
+			cr.GetFieldValue(L"name", tmp.skill);
+			cr.MoveNext();
+			received_skill_selected.AddString(tmp.skill);
+			received_skills_selected[i] = tmp;
+			i++;
 		}
+		cr.Close();
 	}
 }
 
 // Функция для передачи в этот класс БД
 void TrainingListCreateCourse::SetDB(CDatabase* database) {
 	this->database = database;
+}
+
+// Добавить скилл в требуемые
+void TrainingListCreateCourse::OnBnClickedButton1()
+{
+	CString SqlString, err = L"";
+	CString skill_id = skills_all[skill_all.GetCurSel()].skill_id;
+	SqlString = L"INSERT INTO requirement_skill (course_id, skill_id) VALUES (" + course_id + L"," + skill_id + L")";
+
+	TRY{
+		database->ExecuteSQL(SqlString);
+	} CATCH(CDBException, e) {
+		CTrainingListDlg mainDlg;
+		mainDlg.ReconnectDB();
+		TRY{
+			database->ExecuteSQL(SqlString);
+		} CATCH(CDBException, e) {
+			err = e->m_strError;
+		}
+		END_CATCH;
+	}
+	END_CATCH;
+
+	if (err == "") {
+		FillRequirementSkills();
+		FillSkillGroups(skill_groups[skill_group.GetCurSel()].skill_group_id);
+		FillAllSkills();
+	}
+}
+
+// Убрать скилл из требуемых
+void TrainingListCreateCourse::OnBnClickedButton5()
+{
+	CString SqlString, err = L"";
+	CString skill_id = requirement_skills_selected[requirement_skill_selected.GetCurSel()].skill_id;
+	SqlString = L"Delete from requirement_skill where course_id = " + course_id + L" and skill_id = " + skill_id;
+
+	TRY{
+		database->ExecuteSQL(SqlString);
+	} CATCH(CDBException, e) {
+		CTrainingListDlg mainDlg;
+		mainDlg.ReconnectDB();
+		TRY{
+			database->ExecuteSQL(SqlString);
+		} CATCH(CDBException, e) {
+			err = e->m_strError;
+		}
+		END_CATCH;
+	}
+	END_CATCH;
+
+	if (err == "") {
+		FillSkillGroups(skill_groups[skill_group.GetCurSel()].skill_group_id);
+		FillRequirementSkills();
+		FillAllSkills();
+	}
+}
+
+// Смена скилл группы
+void TrainingListCreateCourse::OnTcnSelchangeTab1(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	TRY{
+		FillAllSkills();
+	} CATCH(CDBException, e) {
+		CTrainingListDlg mainDlg;
+		mainDlg.ReconnectDB();
+		TRY{
+			FillAllSkills();
+		} CATCH(CDBException, e) {
+			AfxMessageBox(L"Database error: " + e->m_strError);
+		}
+		END_CATCH;
+	}
+	END_CATCH;
+	
+	*pResult = 0;
+}
+
+// Добавить скилл в получаемые
+void TrainingListCreateCourse::OnBnClickedButton2()
+{
+	CString SqlString, err = L"";
+	CString skill_id = skills_all[skill_all.GetCurSel()].skill_id;
+	SqlString = L"INSERT INTO received_skill (course_id, skill_id) VALUES (" + course_id + L"," + skill_id + L")";
+
+	TRY{
+		database->ExecuteSQL(SqlString);
+	} CATCH(CDBException, e) {
+		CTrainingListDlg mainDlg;
+		mainDlg.ReconnectDB();
+		TRY{
+			database->ExecuteSQL(SqlString);
+		} CATCH(CDBException, e) {
+			err = e->m_strError;
+		}
+		END_CATCH;
+	}
+	END_CATCH;
+
+	if (err == "") {
+		FillReceivedSkills();
+		FillSkillGroups(skill_groups[skill_group.GetCurSel()].skill_group_id);
+		FillAllSkills();
+	}
+}
+
+// Убрать скилл из получаемых
+void TrainingListCreateCourse::OnBnClickedButton6()
+{
+	CString SqlString, err = L"";
+	CString skill_id = received_skills_selected[received_skill_selected.GetCurSel()].skill_id;
+	SqlString = L"Delete from received_skill where course_id = " + course_id + L" and skill_id = " + skill_id;
+
+	TRY{
+		database->ExecuteSQL(SqlString);
+	} CATCH(CDBException, e) {
+		CTrainingListDlg mainDlg;
+		mainDlg.ReconnectDB();
+		TRY{
+			database->ExecuteSQL(SqlString);
+		} CATCH(CDBException, e) {
+			err = e->m_strError;
+		}
+		END_CATCH;
+	}
+	END_CATCH;
+
+	if (err == "") {
+		FillSkillGroups(skill_groups[skill_group.GetCurSel()].skill_group_id);
+		FillReceivedSkills();
+		FillAllSkills();
+	}
 }
