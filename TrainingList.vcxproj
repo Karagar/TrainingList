@@ -190,7 +190,6 @@
     <ClInclude Include="TrainingList.h" />
     <ClInclude Include="TrainingListCourses.h" />
     <ClInclude Include="TrainingListCreateCourse.h" />
-    <ClInclude Include="TrainingListCreateEmploye.h" />
     <ClInclude Include="TrainingListCreateEmployee.h" />
     <ClInclude Include="TrainingListDepartmentsPositions.h" />
     <ClInclude Include="TrainingListDlg.h" />

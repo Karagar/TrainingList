@@ -30,7 +30,7 @@ public:
 	void SetDB(CDatabase* database);
 	void FillCourses();
 	void FillSkills(CString course_id);
-	void ResetControls(CString control_type);
+	void ResetControls(CString course_id);
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedButton2();
 	afx_msg void OnBnClickedButton3();

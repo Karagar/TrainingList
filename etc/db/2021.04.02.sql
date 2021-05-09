@@ -66,14 +66,15 @@ INSERT INTO skill (skill_group_id, name) VALUES (1, 'Сетевые утилит
 create table course (
     course_id int NOT NULL AUTO_INCREMENT,
     name VARCHAR(255),
+    duration int DEFAULT 7,
     PRIMARY KEY (course_id),
     UNIQUE(name)
 );
 
-INSERT INTO course (name) VALUES ('Обучение программированию на Golang');
-INSERT INTO course (name) VALUES ('Обучение программированию на React JS');
-INSERT INTO course (name) VALUES ('Обучение сетевым утилитам Linux');
-INSERT INTO course (name) VALUES ('Конфликтология');
+INSERT INTO course (name, duration) VALUES ('Обучение программированию на Golang', 50);
+INSERT INTO course (name, duration) VALUES ('Обучение программированию на React JS', 40);
+INSERT INTO course (name, duration) VALUES ('Обучение сетевым утилитам Linux', 200);
+INSERT INTO course (name, duration) VALUES ('Конфликтология', 20);
 
 create table requirement_skill (
     requirement_skill_id int NOT NULL AUTO_INCREMENT,

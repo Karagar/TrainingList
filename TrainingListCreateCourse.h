@@ -24,6 +24,7 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // поддержка DDX/DDV
 	virtual BOOL OnInitDialog();
+	virtual void OnCancel();
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -34,6 +35,7 @@ public:
 	void FillAllSkills();
 	void FillRequirementSkills();
 	void FillReceivedSkills();
+	void FillInputs();
 	CTabCtrl skill_group;
 	CListBox received_skill_selected;
 	CListBox requirement_skill_selected;
@@ -43,4 +45,9 @@ public:
 	afx_msg void OnTcnSelchangeTab1(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnBnClickedButton2();
 	afx_msg void OnBnClickedButton6();
+	CString course_name_edit;
+	CString course_duration_edit;
+	afx_msg void OnLbnSelchangeList2();
+	afx_msg void OnLbnSelchangeList3();
+	afx_msg void OnLbnSelchangeList5();
 };

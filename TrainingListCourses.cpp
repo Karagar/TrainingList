@@ -162,6 +162,8 @@ void TrainingListCourses::ResetControls(CString control_type) {
 		course.SetCurSel(-1);
 		GetDlgItem(IDC_BUTTON2)->EnableWindow(false);
 		GetDlgItem(IDC_BUTTON3)->EnableWindow(false);
+		requirement_skill.ResetContent();
+		received_skill.ResetContent();
 	}
 }
 
@@ -172,18 +174,19 @@ void TrainingListCourses::OnBnClickedButton1()
 	returnCode = create_course_page.DoModal();
 
 	TRY{
-		FillSkills(courses[course.GetCurSel()].course_id);
+		FillCourses();
 	} CATCH(CDBException, e) {
 		CTrainingListDlg mainDlg;
 		mainDlg.ReconnectDB();
 		TRY{
-			FillSkills(courses[course.GetCurSel()].course_id);
+			FillCourses();
 		} CATCH(CDBException, e) {
 			AfxMessageBox(L"Database error: " + e->m_strError);
 		}
 		END_CATCH;
 	}
 	END_CATCH;
+	UpdateData(false);
 }
 
 
@@ -195,12 +198,12 @@ void TrainingListCourses::OnBnClickedButton2()
 		returnCode = create_course_page.DoModal();
 
 		TRY{
-			FillSkills(courses[course.GetCurSel()].course_id);
+			FillCourses();
 		} CATCH(CDBException, e) {
 			CTrainingListDlg mainDlg;
 			mainDlg.ReconnectDB();
 			TRY{
-				FillSkills(courses[course.GetCurSel()].course_id);
+				FillCourses();
 			} CATCH(CDBException, e) {
 				AfxMessageBox(L"Database error: " + e->m_strError);
 			}
@@ -216,7 +219,30 @@ void TrainingListCourses::OnBnClickedButton2()
 
 void TrainingListCourses::OnBnClickedButton3()
 {
-	// TODO: добавьте свой код обработчика уведомлений
+	if (course.GetCurSel() >= 0) {
+		INT_PTR returnCode = -1;
+		CString SqlString;
+		SqlString = L"Delete from course where course_id = " + courses[course.GetCurSel()].course_id;
+
+		TRY{
+			database->ExecuteSQL(SqlString);
+			FillCourses();
+		} CATCH(CDBException, e) {
+			CTrainingListDlg mainDlg;
+			mainDlg.ReconnectDB();
+			TRY{
+				database->ExecuteSQL(SqlString);
+				FillCourses();
+			} CATCH(CDBException, e) {
+				AfxMessageBox(L"Database error: " + e->m_strError);
+			}
+			END_CATCH;
+		}
+		END_CATCH;
+	}
+	else {
+		GetDlgItem(IDC_BUTTON2)->EnableWindow(false);
+	}
 }
 
 

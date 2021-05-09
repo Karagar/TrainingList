@@ -48,9 +48,6 @@
     <ClInclude Include="TrainingListCreateCourse.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="TrainingListCreateEmploye.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="TrainingListCreateEmployee.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
