@@ -34,13 +34,15 @@ void TrainingListEmployes::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(TrainingListEmployes, CDialogEx)
 ON_NOTIFY(TCN_SELCHANGE, IDC_TAB1, &TrainingListEmployes::OnChangeActiveTab)
-ON_NOTIFY(LVN_ITEMCHANGED, IDC_LIST4, &TrainingListEmployes::OnLvnItemchangedList4)
+ON_NOTIFY(NM_CLICK, IDC_LIST4, &TrainingListEmployes::OnNMClickList4)
+ON_BN_CLICKED(IDC_BUTTON1, &TrainingListEmployes::OnBnClickedButton1)
 END_MESSAGE_MAP()
 
 // Инициация диалога
 BOOL TrainingListEmployes::OnInitDialog() {
 	CDialogEx::OnInitDialog();
 	CTrainingListDlg mainDlg;
+	employee.SetExtendedStyle(LVS_EX_FULLROWSELECT);
 
 	TRY{
 		FillDepartments(database);
@@ -57,7 +59,7 @@ BOOL TrainingListEmployes::OnInitDialog() {
 	UpdateData(false);
 	RedrawTab();
 	PaintEmployes();
-
+	create_employee_page.SetDB(database);
 	return TRUE;  // возврат значения TRUE, если фокус не передан элементу управления
 }
 
@@ -77,16 +79,19 @@ void TrainingListEmployes::OnChangeActiveTab(NMHDR* pNMHDR, LRESULT* pResult)
 void TrainingListEmployes::FillDepartments(CDatabase* db) {
 	CRecordset cr(db);
 	CString vtval;
+	CString varValue = L" from department where department_id in ( \
+			select distinct department_id from employee e \
+			left join position p on e.position_id = p.position_id )";
 
-	cr.Open(CRecordset::forwardOnly, L"Select count(*) cnt from department");
+	cr.Open(CRecordset::forwardOnly, L"Select count(*) cnt " + varValue);
 	cr.GetFieldValue(L"cnt", vtval);
 	int rowCount = _ttoi(vtval);
 	cr.Close();
 
-	cr.Open(CRecordset::forwardOnly, L"Select department_id, name from department order by 1 desc");
+	cr.Open(CRecordset::forwardOnly, L"Select department_id, name " + varValue);
 	departments = new Department[rowCount];
 	int i = 0;
-
+	department.DeleteAllItems();
 	while (!cr.IsEOF())
 	{
 		Department tmp{};
@@ -95,11 +100,13 @@ void TrainingListEmployes::FillDepartments(CDatabase* db) {
 		cr.MoveNext();
 		department.InsertItem(i, tmp.department);
 		departments[i] = tmp;
+		if (tmp.department_id == last_department_id) {
+			department.SetCurSel(i);
+		}
 		i++;
 	}
 
 	cr.Close();
-	department.SetCurSel(0);
 }
 
 // Отрисовка списка работников
@@ -133,27 +140,36 @@ void TrainingListEmployes::PaintEmployes()
 // Заполнение списка работников в зависимости от подразделения
 void TrainingListEmployes::FillEmployees(CDatabase* db, CString departmentID) {
 	CRecordset cr(db);
-	CString qStr = L"Select \
-				e.name employee, \
-				p.name position \
-				from employee e \
+	CString nFields;
+	CString varValue = L"from employee e \
 				left join position p on e.position_id = p.position_id \
-				left join department d on p.department_id = d.department_id \
-				where d.department_id = " + departmentID;
-	cr.Open(CRecordset::forwardOnly, qStr);
-	short nFields = cr.GetODBCFieldCount();
-	CString employeeValue, positionValue;
+				where p.department_id = " + departmentID;
 
+	cr.Open(CRecordset::forwardOnly, L"Select count(*) cnt " + varValue);
+	cr.GetFieldValue(L"cnt", nFields);
+	int rowCount = _ttoi(nFields);
+	cr.Close();
+
+	CString qStr = L"Select \
+				e.employee_id, \
+				e.name employee, \
+				p.name position " + varValue;
+	cr.Open(CRecordset::forwardOnly, qStr);
+	employees_all = new Employee[rowCount];
+
+	int i = 0;
 	employee.DeleteAllItems();
-	int cIndex = 0;
 	while (!cr.IsEOF())
 	{
-		cr.GetFieldValue(L"employee", employeeValue);
-		cr.GetFieldValue(L"position", positionValue);
+		Employee tmp{};
+		cr.GetFieldValue(L"employee_id", tmp.employee_id);
+		cr.GetFieldValue(L"employee", tmp.employee);
+		cr.GetFieldValue(L"position", tmp.position);
 		cr.MoveNext();
-		employee.InsertItem(cIndex, (LPCTSTR)employeeValue);
-		employee.SetItemText(cIndex, 1, positionValue);
-		cIndex++;
+		employees_all[i] = tmp;
+		employee.InsertItem(i, (LPCTSTR)tmp.employee);
+		employee.SetItemText(i, 1, tmp.position);
+		i++;
 	}
 	cr.Close();
 }
@@ -177,10 +193,31 @@ void TrainingListEmployes::RedrawTab() {
 	SetRedraw(TRUE);
 }
 
-// Выбор конкретного работника
-void TrainingListEmployes::OnLvnItemchangedList4(NMHDR* pNMHDR, LRESULT* pResult)
+
+void TrainingListEmployes::OnNMClickList4(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	INT_PTR returnCode = -1;
-	create_employee_page.employe_id = "0";
+	CString tmpVal = L"0";
+
+	if (employee.GetSelectionMark() >= 0) {
+		tmpVal = employees_all[employee.GetSelectionMark()].employee_id;
+	}
+	create_employee_page.employee_id = tmpVal;
 	returnCode = create_employee_page.DoModal();
+	last_department_id = departments[department.GetCurSel()].department_id;
+	FillDepartments(database);
+	UpdateData(false);
+	FillEmployees(database, last_department_id);
+}
+
+
+void TrainingListEmployes::OnBnClickedButton1()
+{
+	INT_PTR returnCode = -1;
+	create_employee_page.employee_id = L"0";
+	returnCode = create_employee_page.DoModal();
+	last_department_id = departments[department.GetCurSel()].department_id;
+	FillDepartments(database);
+	UpdateData(false);
+	FillEmployees(database, last_department_id);
 }

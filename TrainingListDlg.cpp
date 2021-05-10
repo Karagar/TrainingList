@@ -192,14 +192,14 @@ void CTrainingListDlg::ReconnectDB()
 
 void CTrainingListDlg::OnBnClickedButton1()
 {
-	INT_PTR returnCode = -1;
-	returnCode = employes_page.DoModal();
+	AfxMessageBox(L"Раздел в разработке");
 }
 
 
 void CTrainingListDlg::OnBnClickedButton2()
 {
-	AfxMessageBox(L"Раздел в разработке");
+	INT_PTR returnCode = -1;
+	returnCode = employes_page.DoModal();
 }
 
 void CTrainingListDlg::OnBnClickedButton3()

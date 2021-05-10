@@ -6,10 +6,12 @@ create table department (
     UNIQUE(name)
 );
 
+INSERT INTO department (name) VALUES ('Кандидаты');
 INSERT INTO department (name) VALUES ('IT');
 INSERT INTO department (name) VALUES ('HR');
 INSERT INTO department (name) VALUES ('HelpDesk');
 INSERT INTO department (name) VALUES ('Directors');
+UPDATE department SET department_id = 0 WHERE name = 'Кандидаты';
 
 create table position (
     position_id int NOT NULL AUTO_INCREMENT,
@@ -23,6 +25,8 @@ INSERT INTO position (department_id, name) VALUES (4, 'Технический д
 INSERT INTO position (department_id, name) VALUES (3, 'Заведующий хозяйственной частью');
 INSERT INTO position (department_id, name) VALUES (2, 'Начальник отдела');
 INSERT INTO position (department_id, name) VALUES (1, 'Ведущий специалист');
+INSERT INTO position (department_id, name) VALUES (0, 'Кандидат');
+UPDATE position SET position_id = 0 WHERE name = 'Кандидат';
 
 create table employee (
     employee_id int NOT NULL AUTO_INCREMENT,

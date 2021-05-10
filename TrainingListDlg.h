@@ -55,7 +55,7 @@ struct Position
 struct Employee
 {
 	CString employee_id;
-	CString position_id;
+	CString position;
 	CString employee;
 };
 

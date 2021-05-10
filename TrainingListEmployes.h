@@ -13,6 +13,7 @@ public:
 	TrainingListEmployes(CWnd* pParent = nullptr);   // стандартный конструктор
 	CDatabase *database;
 	Department *departments;
+	Employee* employees_all;
 	virtual ~TrainingListEmployes();
 
 // Данные диалогового окна
@@ -26,6 +27,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
+	CString last_department_id;
 	CListCtrl employee;
 	void SetDB(CDatabase* database);
 	void PaintEmployes();
@@ -34,5 +36,6 @@ public:
 	void FillEmployees(CDatabase* db, CString departmentStr);
 	CTabCtrl department;
 	afx_msg void OnChangeActiveTab(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnLvnItemchangedList4(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnNMClickList4(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnBnClickedButton1();
 };

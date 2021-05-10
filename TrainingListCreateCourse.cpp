@@ -77,51 +77,56 @@ BOOL TrainingListCreateCourse::OnInitDialog() {
 	return TRUE;  // возврат значения TRUE, если фокус не передан элементу управления
 }
 
-// Инициация диалога
+// Закрытие диалога
 void TrainingListCreateCourse::OnCancel() {
-	CDialogEx::OnCancel();
-	CString courseSqlString = L"", 
-			requirementSqlString = L"",
-			receivedSqlString = L"";
-	int courseDuration = 0;
 	UpdateData(true);
+	CString courseSqlString = L"",
+		requirementSqlString = L"",
+		receivedSqlString = L"";
+	int courseDuration = _ttoi(course_duration_edit);
 
-	course_name_edit.Replace(L"\\", L"\\\\");
-	course_name_edit.Replace(L"\'", L"\\\'");
-	courseDuration = _ttoi(course_duration_edit);
-	if (courseDuration == 0) {
-		course_duration_edit = L"7";
+	if (course_name_edit.GetLength() == 0) {
+		CDialogEx::OnCancel();
 	}
+	else {
+		course_name_edit.Replace(L"\\", L"\\\\");
+		course_name_edit.Replace(L"\'", L"\\\'");
+		course_duration_edit.Format(L"%d", courseDuration);
+		UpdateData(false);
 
-	if (_ttoi(course_id) > 0) {
-		courseSqlString = L"Update course set name = '" + course_name_edit + L"', duration = " + course_duration_edit + L" where course_id = " + course_id;
-	} else {
-		courseSqlString = L"Insert into course(name, duration) values ('" + course_name_edit + L"'," + course_duration_edit + L");";
-		requirementSqlString = L"Update requirement_skill set course_id = (select max(course_id) from course) where course_id = 0;";
-		receivedSqlString = L"Update received_skill set course_id = (select max(course_id) from course) where course_id = 0;";
-	}
-	
-	TRY{
-		database->ExecuteSQL(courseSqlString);
-		if (_ttoi(course_id) == 0) {
-			database->ExecuteSQL(requirementSqlString);
-			database->ExecuteSQL(receivedSqlString);
+		if (_ttoi(course_id) > 0) {
+			courseSqlString = L"Update course set name = '" + course_name_edit + L"', duration = " + course_duration_edit + L" where course_id = " + course_id;
 		}
-	} CATCH(CDBException, e) {
-		CTrainingListDlg mainDlg;
-		mainDlg.ReconnectDB();
+		else {
+			courseSqlString = L"Insert into course(name, duration) values ('" + course_name_edit + L"'," + course_duration_edit + L");";
+			requirementSqlString = L"Update requirement_skill set course_id = (select max(course_id) from course) where course_id = 0;";
+			receivedSqlString = L"Update received_skill set course_id = (select max(course_id) from course) where course_id = 0;";
+		}
+
 		TRY{
 			database->ExecuteSQL(courseSqlString);
 			if (_ttoi(course_id) == 0) {
 				database->ExecuteSQL(requirementSqlString);
 				database->ExecuteSQL(receivedSqlString);
 			}
+			CDialogEx::OnCancel();
 		} CATCH(CDBException, e) {
-			AfxMessageBox(L"Database error: " + e->m_strError);
+			CTrainingListDlg mainDlg;
+			mainDlg.ReconnectDB();
+			TRY{
+				database->ExecuteSQL(courseSqlString);
+				if (_ttoi(course_id) == 0) {
+					database->ExecuteSQL(requirementSqlString);
+					database->ExecuteSQL(receivedSqlString);
+				}
+				CDialogEx::OnCancel();
+			} CATCH(CDBException, e) {
+				AfxMessageBox(L"Sorry, we've got an error: " + e->m_strError);
+			}
+			END_CATCH;
 		}
 		END_CATCH;
 	}
-	END_CATCH;
 }
 
 // Стилизация окна списка работников
