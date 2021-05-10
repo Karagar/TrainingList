@@ -10,6 +10,7 @@
 #include "TrainingListDepartmentsPositions.h"
 #include "TrainingListCreateCourse.h"
 #include "TrainingListSkills.h"
+#include "TrainingListMatrix.h"
 #include "TrainingListCourses.h"
 #include "afxdialogex.h"
 #include "odbcinst.h"
@@ -24,6 +25,7 @@ CString connection_string = L"Driver={MySQL ODBC 8.0 Unicode Driver};Server=153.
 TrainingListEmployes employes_page;
 TrainingListDepartmentsPositions departments_positions_page;
 TrainingListSkills skills_page;
+TrainingListMatrix matrix_page;
 TrainingListCourses courses_page;
 
 // Диалоговое окно CAboutDlg используется для описания сведений о приложении
@@ -192,7 +194,8 @@ void CTrainingListDlg::ReconnectDB()
 
 void CTrainingListDlg::OnBnClickedButton1()
 {
-	AfxMessageBox(L"Раздел в разработке");
+	INT_PTR returnCode = -1;
+	returnCode = matrix_page.DoModal();
 }
 
 

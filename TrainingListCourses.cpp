@@ -26,7 +26,7 @@ TrainingListCourses::~TrainingListCourses()
 void TrainingListCourses::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_LIST1, course);
+	DDX_Control(pDX, IDC_LIST4, course);
 	DDX_Control(pDX, IDC_LIST2, requirement_skill);
 	DDX_Control(pDX, IDC_LIST3, received_skill);
 }
@@ -36,7 +36,7 @@ BEGIN_MESSAGE_MAP(TrainingListCourses, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON1, &TrainingListCourses::OnBnClickedButton1)
 	ON_BN_CLICKED(IDC_BUTTON2, &TrainingListCourses::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_BUTTON3, &TrainingListCourses::OnBnClickedButton3)
-	ON_LBN_SELCHANGE(IDC_LIST1, &TrainingListCourses::OnLbnSelchangeList1)
+	ON_NOTIFY(NM_CLICK, IDC_LIST4, &TrainingListCourses::OnNMClickList4)
 END_MESSAGE_MAP()
 
 
@@ -44,6 +44,16 @@ END_MESSAGE_MAP()
 BOOL TrainingListCourses::OnInitDialog() {
 	CDialogEx::OnInitDialog();
 	CTrainingListDlg mainDlg;
+	CRect Rect;
+
+	course.GetClientRect(&Rect);
+	course.InsertColumn(0, L"Название");
+	course.SetColumnWidth(0, Rect.Width() * 0.7);
+	course.InsertColumn(1, L"Продолжительность (дней)");
+	course.SetColumnWidth(1, Rect.Width() * 0.3);
+	course.SetExtendedStyle(LVS_EX_GRIDLINES);
+	course.SetExtendedStyle(LVS_EX_FULLROWSELECT);
+	course.SetExtendedStyle(LVS_EX_FULLROWSELECT);
 
 	TRY{
 		FillCourses();
@@ -77,9 +87,9 @@ void TrainingListCourses::FillCourses() {
 	int rowCount = _ttoi(varValue);
 	cr.Close();
 
-	cr.Open(CRecordset::forwardOnly, L"Select course_id, name from course order by 1 desc");
+	cr.Open(CRecordset::forwardOnly, L"Select course_id, name, duration from course order by 1 desc");
 	courses = new Course[rowCount];
-	course.ResetContent();
+	course.DeleteAllItems();
 	int i = 0;
 
 	while (!cr.IsEOF())
@@ -87,8 +97,10 @@ void TrainingListCourses::FillCourses() {
 		Course tmp{};
 		cr.GetFieldValue(L"course_id", tmp.course_id);
 		cr.GetFieldValue(L"name", tmp.course);
+		cr.GetFieldValue(L"duration", tmp.duration);
 		cr.MoveNext();
-		course.AddString(tmp.course);
+		course.InsertItem(i, (LPCTSTR)tmp.course);
+		course.SetItemText(i, 1, tmp.duration);
 		courses[i] = tmp;
 		i++;
 	}
@@ -159,7 +171,7 @@ void TrainingListCourses::FillSkills(CString course_id) {
 void TrainingListCourses::ResetControls(CString control_type) {
 	if (control_type == L"course")
 	{
-		course.SetCurSel(-1);
+		course.SetSelectionMark(-1);
 		GetDlgItem(IDC_BUTTON2)->EnableWindow(false);
 		GetDlgItem(IDC_BUTTON3)->EnableWindow(false);
 		requirement_skill.ResetContent();
@@ -192,9 +204,9 @@ void TrainingListCourses::OnBnClickedButton1()
 
 void TrainingListCourses::OnBnClickedButton2()
 {
-	if (course.GetCurSel() >= 0) {
+	if (course.GetSelectionMark() >= 0) {
 		INT_PTR returnCode = -1;
-		create_course_page.course_id = courses[course.GetCurSel()].course_id;
+		create_course_page.course_id = courses[course.GetSelectionMark()].course_id;
 		returnCode = create_course_page.DoModal();
 
 		TRY{
@@ -219,10 +231,10 @@ void TrainingListCourses::OnBnClickedButton2()
 
 void TrainingListCourses::OnBnClickedButton3()
 {
-	if (course.GetCurSel() >= 0) {
+	if (course.GetSelectionMark() >= 0) {
 		INT_PTR returnCode = -1;
 		CString SqlString;
-		SqlString = L"Delete from course where course_id = " + courses[course.GetCurSel()].course_id;
+		SqlString = L"Delete from course where course_id = " + courses[course.GetSelectionMark()].course_id;
 
 		TRY{
 			database->ExecuteSQL(SqlString);
@@ -246,16 +258,16 @@ void TrainingListCourses::OnBnClickedButton3()
 }
 
 
-void TrainingListCourses::OnLbnSelchangeList1()
+void TrainingListCourses::OnNMClickList4(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	if (course.GetCurSel() >= 0) {
+	if (course.GetSelectionMark() >= 0) {
 		TRY{
-			FillSkills(courses[course.GetCurSel()].course_id);
+			FillSkills(courses[course.GetSelectionMark()].course_id);
 		} CATCH(CDBException, e) {
 			CTrainingListDlg mainDlg;
 			mainDlg.ReconnectDB();
 			TRY{
-				FillSkills(courses[course.GetCurSel()].course_id);
+				FillSkills(courses[course.GetSelectionMark()].course_id);
 			} CATCH(CDBException, e) {
 				AfxMessageBox(L"Database error: " + e->m_strError);
 			}

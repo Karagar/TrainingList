@@ -31,11 +31,12 @@ public:
 	void FillCourses();
 	void FillSkills(CString course_id);
 	void ResetControls(CString course_id);
+	void RedrawTab();
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedButton2();
 	afx_msg void OnBnClickedButton3();
-	CListBox course;
+	CListCtrl course;
 	CListBox requirement_skill;
 	CListBox received_skill;
-	afx_msg void OnLbnSelchangeList1();
+	afx_msg void OnNMClickList4(NMHDR* pNMHDR, LRESULT* pResult);
 };

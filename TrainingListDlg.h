@@ -74,5 +74,6 @@ struct Skill
 struct Course
 {
 	CString course_id;
+	CString duration;
 	CString course;
 };
