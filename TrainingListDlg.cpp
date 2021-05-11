@@ -126,7 +126,7 @@ BOOL CTrainingListDlg::OnInitDialog()
 	departments_positions_page.SetDB(&database);
 	skills_page.SetDB(&database);
 	courses_page.SetDB(&database);
-	// Close the database
+	matrix_page.SetDB(&database);
 	//database.Close();
 
 	return TRUE;  // возврат значения TRUE, если фокус не передан элементу управления

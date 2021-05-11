@@ -1,4 +1,3 @@
-use u251775558_training_list;
 create table department (
     department_id int NOT NULL AUTO_INCREMENT,
     name VARCHAR(255),
@@ -6,11 +5,11 @@ create table department (
     UNIQUE(name)
 );
 
-INSERT INTO department (name) VALUES ('Кандидаты');
 INSERT INTO department (name) VALUES ('IT');
 INSERT INTO department (name) VALUES ('HR');
 INSERT INTO department (name) VALUES ('HelpDesk');
 INSERT INTO department (name) VALUES ('Directors');
+INSERT INTO department (name) VALUES ('Кандидаты');
 UPDATE department SET department_id = 0 WHERE name = 'Кандидаты';
 
 create table position (
