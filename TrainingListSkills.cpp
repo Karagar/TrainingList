@@ -157,19 +157,35 @@ CString TrainingListSkills::UpdateSkillGroup(CString skill_group_id, CString to)
 
 // Удаление группы скилов
 CString TrainingListSkills::DeleteSkillGroup(CString skill_group_id) {
-	CString firstSqlString, secondSqlString, err = L"";
+	CString firstSqlString, secondSqlString, thirdSqlString, fourthSqlString, fifthSqlString, sixthSqlString, err = L"";
 	firstSqlString = L"DELETE FROM skill_group where skill_group_id = " + skill_group_id;
-	secondSqlString = L"DELETE FROM skill where skill_group_id = " + skill_group_id;
+	secondSqlString = L"DELETE FROM employee_skill where skill_id in ( \
+	select skill_id from skill where skill_group_id = " + skill_group_id + L")";
+	thirdSqlString = L"DELETE FROM position_skill where skill_id in ( \
+	select skill_id from skill where skill_group_id = " + skill_group_id + L")";
+	fourthSqlString = L"DELETE FROM received_skill where skill_id in ( \
+	select skill_id from skill where skill_group_id = " + skill_group_id + L")";
+	fifthSqlString = L"DELETE FROM requirement_skill where skill_id in ( \
+	select skill_id from skill where skill_group_id = " + skill_group_id + L")";
+	sixthSqlString = L"DELETE FROM skill where skill_group_id = " + skill_group_id;
 
 	TRY{
 		database->ExecuteSQL(firstSqlString);
 		database->ExecuteSQL(secondSqlString);
+		database->ExecuteSQL(thirdSqlString);
+		database->ExecuteSQL(fourthSqlString);
+		database->ExecuteSQL(fifthSqlString);
+		database->ExecuteSQL(sixthSqlString);
 	} CATCH(CDBException, e) {
 		CTrainingListDlg mainDlg;
 		mainDlg.ReconnectDB();
 		TRY{
 			database->ExecuteSQL(firstSqlString);
 			database->ExecuteSQL(secondSqlString);
+			database->ExecuteSQL(thirdSqlString);
+			database->ExecuteSQL(fourthSqlString);
+			database->ExecuteSQL(fifthSqlString);
+			database->ExecuteSQL(sixthSqlString);
 		} CATCH(CDBException, e) {
 			err = e->m_strError;
 		}
@@ -207,16 +223,28 @@ CString TrainingListSkills::UpdateSkill(CString skill_id, CString to) {
 
 // Удаление скила
 CString TrainingListSkills::DeleteSkill(CString skill_id) {
-	CString SqlString, err = L"";
-	SqlString = L"DELETE FROM skill where skill_id = " + skill_id;
+	CString firstSqlString, secondSqlString, thirdSqlString, fourthSqlString, fifthSqlString, err = L"";
+	firstSqlString = L"DELETE FROM skill where skill_id = " + skill_id;
+	secondSqlString = L"DELETE FROM employee_skill where skill_id = " + skill_id;
+	thirdSqlString = L"DELETE FROM position_skill where skill_id = " + skill_id;
+	fourthSqlString = L"DELETE FROM received_skill where skill_id = " + skill_id;
+	fifthSqlString = L"DELETE FROM requirement_skill where skill_id = " + skill_id;
 
 	TRY{
-		database->ExecuteSQL(SqlString);
+		database->ExecuteSQL(firstSqlString);
+		database->ExecuteSQL(secondSqlString);
+		database->ExecuteSQL(thirdSqlString);
+		database->ExecuteSQL(fourthSqlString);
+		database->ExecuteSQL(fifthSqlString);
 	} CATCH(CDBException, e) {
 		CTrainingListDlg mainDlg;
 		mainDlg.ReconnectDB();
 		TRY{
-			database->ExecuteSQL(SqlString);
+			database->ExecuteSQL(firstSqlString);
+			database->ExecuteSQL(secondSqlString);
+			database->ExecuteSQL(thirdSqlString);
+			database->ExecuteSQL(fourthSqlString);
+			database->ExecuteSQL(fifthSqlString);
 		} CATCH(CDBException, e) {
 			err = e->m_strError;
 		}

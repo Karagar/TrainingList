@@ -41,6 +41,8 @@ BEGIN_MESSAGE_MAP(TrainingListMatrix, CDialogEx)
 	ON_NOTIFY(NM_CLICK, IDC_LIST4, &TrainingListMatrix::OnNMClickList4)
 	ON_LBN_SELCHANGE(IDC_LIST5, &TrainingListMatrix::OnLbnSelchangeList5)
 	ON_NOTIFY(NM_CLICK, IDC_LIST7, &TrainingListMatrix::OnNMClickList7)
+	ON_BN_CLICKED(IDC_BUTTON1, &TrainingListMatrix::OnBnClickedButton1)
+	ON_NOTIFY(TCN_SELCHANGE, IDC_TAB2, &TrainingListMatrix::OnTcnSelchangeTab2)
 END_MESSAGE_MAP()
 
 // Функция для передачи в этот класс БД
@@ -194,6 +196,7 @@ void TrainingListMatrix::FillEmployees() {
 void TrainingListMatrix::OnTcnSelchangeTab1(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	CTrainingListDlg mainDlg;
+	ClearAllWindows();
 	TRY{
 		FillEmployees();
 	} CATCH(CDBException, e) {
@@ -259,6 +262,7 @@ void TrainingListMatrix::FillSkillGroups() {
 		}
 		cr.Close();
 	} else {
+		skill_group.DeleteAllItems();
 		skill_groups = new SkillGroup[1];
 		SkillGroup tmp{};
 		tmp.skill_group_id = L"0";
@@ -355,6 +359,9 @@ void TrainingListMatrix::FillCourses() {
 
 	qStr = L" from course where course_id in(\
 				select course_id FROM received_skill WHERE skill_id = " + skill_id + L" \
+			) and course_id not in(\
+				select course_id from requirement_skill where skill_id not in \
+				(SELECT skill_id FROM `employee_skill` WHERE employee_id = " + employee_id + L") \
 			)";
 	cr.Open(CRecordset::forwardOnly, L"Select count(*) cnt " + qStr);
 	cr.GetFieldValue(L"cnt", varValue);
@@ -445,9 +452,36 @@ void TrainingListMatrix::FillCourseSkills() {
 	}
 }
 
+// Функция для очистки всех списков умений и курсов
+void TrainingListMatrix::ClearAllWindows() {
+	employee_skill.ResetContent();
+	available_skill.ResetContent();
+	skill_group.DeleteAllItems();
+	skill_groups = new SkillGroup[1];
+	SkillGroup tmp{};
+	tmp.skill_group_id = L"0";
+	tmp.skill_group = L"";
+	skill_group.InsertItem(0, tmp.skill_group);
+	skill_groups[0] = tmp;
+	skill_group.SetCurSel(0);
+	requirement_skill.ResetContent();
+	received_skill.ResetContent();
+	course.DeleteAllItems();
+}
+
+// Функция для очистки списков курсов и связанных умений
+void TrainingListMatrix::ClearBottomWindows() {
+	requirement_skill.ResetContent();
+	received_skill.ResetContent();
+	course.DeleteAllItems();
+}
+
+
 void TrainingListMatrix::OnNMClickList4(NMHDR* pNMHDR, LRESULT* pResult)
 {
+	CTrainingListDlg mainDlg;
 	INT_PTR returnCode = -1;
+	ClearBottomWindows();
 
 	if (employee.GetSelectionMark() >= 0) {
 		employee_id = employees_all[employee.GetSelectionMark()].employee_id;
@@ -456,9 +490,54 @@ void TrainingListMatrix::OnNMClickList4(NMHDR* pNMHDR, LRESULT* pResult)
 		employee_id = L"";
 	}
 
-	FillSkillGroups();
-	FillAllSkills();
-	FillEmployeeSkills();
+	TRY{
+		FillSkillGroups();
+		FillAllSkills();
+		FillEmployeeSkills();
+		UpdateData(false);
+	} CATCH(CDBException, e) {
+		mainDlg.ReconnectDB();
+		TRY{
+			FillSkillGroups();
+			FillAllSkills();
+			FillEmployeeSkills();
+			UpdateData(false);
+		} CATCH(CDBException, e) {
+			AfxMessageBox(L"Database error: " + e->m_strError);
+		}
+		END_CATCH;
+	}
+	END_CATCH;
+}
+
+
+void TrainingListMatrix::OnTcnSelchangeTab2(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	CTrainingListDlg mainDlg;
+	ClearBottomWindows();
+
+	if (employee.GetSelectionMark() >= 0) {
+		employee_id = employees_all[employee.GetSelectionMark()].employee_id;
+	}
+	else
+	{
+		employee_id = L"";
+	}
+
+	TRY{
+		FillAllSkills();
+		FillEmployeeSkills();
+	} CATCH(CDBException, e) {
+		mainDlg.ReconnectDB();
+		TRY{
+			FillAllSkills();
+			FillEmployeeSkills();
+		} CATCH(CDBException, e) {
+			AfxMessageBox(L"Database error: " + e->m_strError);
+		}
+		END_CATCH;
+	}
+	END_CATCH;
 	UpdateData(false);
 }
 
@@ -476,6 +555,8 @@ void TrainingListMatrix::OnNMClickList7(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	if (course.GetSelectionMark() >= 0) {
 		course_id = courses[course.GetSelectionMark()].course_id;
+		GetDlgItem(IDC_BUTTON1)->EnableWindow(true);
+
 		TRY{
 			FillCourseSkills();
 		} CATCH(CDBException, e) {
@@ -491,4 +572,45 @@ void TrainingListMatrix::OnNMClickList7(NMHDR* pNMHDR, LRESULT* pResult)
 		END_CATCH;
 		UpdateData(false);
 	}
+}
+
+
+void TrainingListMatrix::OnBnClickedButton1()
+{
+	if ((_ttoi(employee_id) > 0)&&(_ttoi(course_id) > 0)) {
+		CString SqlString, err = L"";
+		SqlString = L"INSERT INTO employee_skill (employee_id, skill_id) \
+			select " + employee_id + L", skill_id from received_skill \
+			where course_id = " + course_id + L" and skill_id not in( \
+			select skill_id from employee_skill where employee_id = " + employee_id + L" \
+			)";
+
+		TRY{
+			database->ExecuteSQL(SqlString);
+			FillSkillGroups();
+			FillAllSkills();
+			FillEmployeeSkills();
+			UpdateData(false);
+		} CATCH(CDBException, e) {
+			CTrainingListDlg mainDlg;
+			mainDlg.ReconnectDB();
+			TRY{
+				database->ExecuteSQL(SqlString);
+				FillSkillGroups();
+				FillAllSkills();
+				FillEmployeeSkills();
+				UpdateData(false);
+			} CATCH(CDBException, e) {
+				err = e->m_strError;
+			}
+			END_CATCH;
+		}
+		END_CATCH;
+
+		if (err == "") {
+			ClearBottomWindows();
+		}
+	}
+
+	GetDlgItem(IDC_BUTTON1)->EnableWindow(false);
 }

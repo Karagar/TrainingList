@@ -233,17 +233,23 @@ void TrainingListCourses::OnBnClickedButton3()
 {
 	if (course.GetSelectionMark() >= 0) {
 		INT_PTR returnCode = -1;
-		CString SqlString;
-		SqlString = L"Delete from course where course_id = " + courses[course.GetSelectionMark()].course_id;
+		CString FirstSqlString, SecondSqlString, ThirdSqlString;
+		FirstSqlString = L"Delete from course where course_id = " + courses[course.GetSelectionMark()].course_id;
+		SecondSqlString = L"Delete from received_skill where course_id = " + courses[course.GetSelectionMark()].course_id;
+		ThirdSqlString = L"Delete from requirement_skill where course_id = " + courses[course.GetSelectionMark()].course_id;
 
 		TRY{
-			database->ExecuteSQL(SqlString);
+			database->ExecuteSQL(FirstSqlString);
+			database->ExecuteSQL(SecondSqlString);
+			database->ExecuteSQL(ThirdSqlString);
 			FillCourses();
 		} CATCH(CDBException, e) {
 			CTrainingListDlg mainDlg;
 			mainDlg.ReconnectDB();
 			TRY{
-				database->ExecuteSQL(SqlString);
+				database->ExecuteSQL(FirstSqlString);
+				database->ExecuteSQL(SecondSqlString);
+				database->ExecuteSQL(ThirdSqlString);
 				FillCourses();
 			} CATCH(CDBException, e) {
 				AfxMessageBox(L"Database error: " + e->m_strError);

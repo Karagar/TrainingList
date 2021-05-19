@@ -156,19 +156,24 @@ CString TrainingListDepartmentsPositions::UpdateDepartment(CString department_id
 
 // Удаление подразделения
 CString TrainingListDepartmentsPositions::DeleteDepartment(CString department_id) {
-	CString firstSqlString, secondSqlString, err = L"";
+	CString firstSqlString, secondSqlString, ThirdSqlString, err = L"";
 	firstSqlString = L"DELETE FROM department where department_id = " + department_id;
-	secondSqlString = L"DELETE FROM position where department_id = " + department_id;
+	secondSqlString = L"DELETE FROM position_skill where position_id in ( \
+		select position_id FROM position where department_id = " + department_id + L")";
+	ThirdSqlString = L"DELETE FROM position where department_id = " + department_id;
+
 
 	TRY{
 		database->ExecuteSQL(firstSqlString);
 		database->ExecuteSQL(secondSqlString);
+		database->ExecuteSQL(ThirdSqlString);
 	} CATCH(CDBException, e) {
 		CTrainingListDlg mainDlg;
 		mainDlg.ReconnectDB();
 		TRY{
 			database->ExecuteSQL(firstSqlString);
 			database->ExecuteSQL(secondSqlString);
+			database->ExecuteSQL(ThirdSqlString);
 		} CATCH(CDBException, e) {
 			err = e->m_strError;
 		}
@@ -206,16 +211,19 @@ CString TrainingListDepartmentsPositions::UpdatePosition(CString position_id, CS
 
 // Удаление подразделения
 CString TrainingListDepartmentsPositions::DeletePosition(CString position_id) {
-	CString SqlString, err = L"";
-	SqlString = L"DELETE FROM position where position_id = " + position_id;
+	CString firstSqlString, secondSqlString, err = L"";
+	firstSqlString = L"DELETE FROM position where position_id = " + position_id;
+	secondSqlString = L"DELETE FROM position_skill where position_id = " + position_id;
 
 	TRY{
-		database->ExecuteSQL(SqlString);
+		database->ExecuteSQL(firstSqlString);
+		database->ExecuteSQL(secondSqlString);
 	} CATCH(CDBException, e) {
 		CTrainingListDlg mainDlg;
 		mainDlg.ReconnectDB();
 		TRY{
-			database->ExecuteSQL(SqlString);
+			database->ExecuteSQL(firstSqlString);
+			database->ExecuteSQL(secondSqlString);
 		} CATCH(CDBException, e) {
 			err = e->m_strError;
 		}

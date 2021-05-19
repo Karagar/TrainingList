@@ -43,6 +43,8 @@ public:
 	void FillEmployeeSkills();
 	void FillCourses();
 	void FillCourseSkills();
+	void ClearAllWindows();
+	void ClearBottomWindows();
 	CTabCtrl skill_group;
 	CTabCtrl department;
 	CListCtrl employee;
@@ -55,4 +57,6 @@ public:
 	CListBox received_skill;
 	CListBox requirement_skill;
 	afx_msg void OnNMClickList7(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnBnClickedButton1();
+	afx_msg void OnTcnSelchangeTab2(NMHDR* pNMHDR, LRESULT* pResult);
 };
